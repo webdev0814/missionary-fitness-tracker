@@ -55,11 +55,11 @@ function targetKm(day, phase) {
 }
 
 function workoutUrlForPhase(phaseName) {
-  const baseUrl = "https://github.com/webdev0814/missionary-ready-90-day-fitness-tracker";
-  if (phaseName === "Phase 1 - Baseline") return `${baseUrl}#phase-1-baseline`;
-  if (phaseName === "Phase 2 - Stamina") return `${baseUrl}#phase-2-stamina`;
-  if (phaseName === "Phase 3 - Load Bearing") return `${baseUrl}#phase-3-load-bearing`;
-  return `${baseUrl}#phase-4-mission-match`;
+  const baseUrl = "https://www.churchofjesuschrist.org/study/manual/missionary-wellness-fitness";
+  if (phaseName === "Phase 1 - Baseline") return `${baseUrl}/01-fitness/01-fitness1?lang=eng`;
+  if (phaseName === "Phase 2 - Stamina") return `${baseUrl}/02-fitness/01-fitness2?lang=eng`;
+  if (phaseName === "Phase 3 - Load Bearing") return `${baseUrl}/03-fitness/01-fitness3?lang=eng`;
+  return `${baseUrl}/04-fitness/01-fitness4?lang=eng`;
 }
 
 async function injectWorkoutHyperlinks(xlsxPath) {
