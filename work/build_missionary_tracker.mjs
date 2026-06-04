@@ -1,6 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { SpreadsheetFile, Workbook } from "@oai/artifact-tool";
+const { default: JSZip } = await import(
+  "file:///C:/Users/jason/Documents/Codex/2026-06-04/lets-do-a-smart-contract-on/node_modules/.pnpm/jszip@3.10.1/node_modules/jszip/dist/jszip.min.js"
+);
 
 const OUTPUT_DIR = path.join(
   "C:\\Users\\jason\\Documents\\Codex\\2026-06-04\\lets-do-a-smart-contract-on",
@@ -51,6 +54,74 @@ function targetKm(day, phase) {
   return isLongWalkDay(day, phase) ? phase.longKm : phase.baseKm;
 }
 
+function workoutUrlForPhase(phaseName) {
+  const baseUrl = "https://github.com/webdev0814/missionary-ready-90-day-fitness-tracker";
+  if (phaseName === "Phase 1 - Baseline") return `${baseUrl}#phase-1-baseline`;
+  if (phaseName === "Phase 2 - Stamina") return `${baseUrl}#phase-2-stamina`;
+  if (phaseName === "Phase 3 - Load Bearing") return `${baseUrl}#phase-3-load-bearing`;
+  return `${baseUrl}#phase-4-mission-match`;
+}
+
+async function injectWorkoutHyperlinks(xlsxPath) {
+  const archive = await JSZip.loadAsync(await fs.readFile(xlsxPath));
+  const sheetPath = "xl/worksheets/sheet2.xml";
+  const relsPath = "xl/worksheets/_rels/sheet2.xml.rels";
+  const sheetXml = await archive.file(sheetPath).async("string");
+  const urlByRow = new Map();
+  for (let day = 1; day <= days; day += 1) {
+    const phase = phaseForDay(day);
+    urlByRow.set(day + 1, workoutUrlForPhase(phase.name));
+  }
+
+  let hyperlinkIndex = 0;
+  let updatedSheetXml = sheetXml.replace(
+    /<x:worksheet xmlns:x="http:\/\/schemas\.openxmlformats\.org\/spreadsheetml\/2006\/main">/,
+    '<x:worksheet xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">',
+  );
+
+  updatedSheetXml = updatedSheetXml.replace(
+    /<x:c r="H(\d+)" s="(\d+)" t="str"><x:v>Open workout<\/x:v><\/x:c>/g,
+    (_match, row, style) => {
+      const ref = `H${row}`;
+      const relId = `rId${++hyperlinkIndex}`;
+      const target = urlByRow.get(Number(row));
+      return `<x:c r="${ref}" s="${style}" t="str"><x:v>Open workout</x:v></x:c>`;
+    },
+  );
+
+  const hyperlinkXml = [];
+  hyperlinkIndex = 0;
+  for (let day = 1; day <= days; day += 1) {
+    const row = day + 1;
+    const relId = `rId${++hyperlinkIndex}`;
+    const target = urlByRow.get(row);
+    hyperlinkXml.push(`<x:hyperlink ref="H${row}" r:id="${relId}"/>`);
+  }
+  updatedSheetXml = updatedSheetXml.replace(
+    "</x:worksheet>",
+    `<x:hyperlinks>${hyperlinkXml.join("")}</x:hyperlinks></x:worksheet>`,
+  );
+
+  const relXml = [
+    '<?xml version="1.0" encoding="utf-8"?>',
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">',
+  ];
+  hyperlinkIndex = 0;
+  for (let day = 1; day <= days; day += 1) {
+    const row = day + 1;
+    const relId = `rId${++hyperlinkIndex}`;
+    const target = urlByRow.get(row);
+    relXml.push(
+      `<Relationship Id="${relId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="${target}" TargetMode="External"/>`,
+    );
+  }
+  relXml.push("</Relationships>");
+
+  archive.file(sheetPath, updatedSheetXml);
+  archive.file(relsPath, relXml.join(""));
+  await fs.writeFile(xlsxPath, await archive.generateAsync({ type: "nodebuffer" }));
+}
+
 const workbook = Workbook.create();
 const dashboard = workbook.worksheets.add(dashboardName);
 const ledger = workbook.worksheets.add(ledgerName);
@@ -76,14 +147,16 @@ for (let day = 1; day <= days; day += 1) {
     0,
     "N",
     null,
+    "Open workout",
   ]);
 }
 
-ledger.getRange(`A2:G${days + 1}`).values = ledgerRows;
+ledger.getRange(`A2:H${days + 1}`).values = ledgerRows;
 ledger.getRange("G2").formulas = [[
   '=IF(AND(E2=0,UPPER(F2)="N"),"PENDING",IF(AND(E2>=D2,UPPER(F2)="Y"),"SUCCESS",IF(OR(E2>=D2,UPPER(F2)="Y"),"PARTIAL SUCCESS","FAILURE")))',
 ]];
 ledger.getRange("G2:G91").fillDown();
+ledger.getRange("H1").values = [["Workout Link"]];
 
 ledger.freezePanes.freezeRows(1);
 ledger.showGridLines = false;
@@ -95,10 +168,24 @@ ledger.getRange("A1:G1").format = {
   verticalAlignment: "middle",
   horizontalAlignment: "center",
 };
-ledger.getRange("A2:G91").format = {
+ledger.getRange("H1:H1").format = {
+  fill: "#0F172A",
+  font: { bold: true, color: "#FFFFFF" },
+  wrapText: true,
+  verticalAlignment: "middle",
+  horizontalAlignment: "center",
+};
+ledger.getRange("A2:H91").format = {
   borders: { preset: "all", style: "thin", color: "#CBD5E1" },
   font: { color: "#0F172A" },
   wrapText: true,
+  verticalAlignment: "middle",
+};
+ledger.getRange("H2:H91").format = {
+  borders: { preset: "all", style: "thin", color: "#CBD5E1" },
+  fill: "#EEF2FF",
+  font: { color: "#1D4ED8", bold: true, underline: true },
+  horizontalAlignment: "left",
   verticalAlignment: "middle",
 };
 ledger.getRange("A2:A91").format.wrapText = false;
@@ -404,7 +491,6 @@ dashboard.getRange("A18:E18").format = {
   fill: "#F8FAFC",
   font: { italic: true },
 };
-ledger.getRange("A1:A91").format.columnWidthPx = 125;
 ledger.getRange("A1:A91").format.columnWidthPx = 115;
 ledger.getRange("B1:B91").format.columnWidthPx = 160;
 ledger.getRange("C1:C91").format.columnWidthPx = 170;
@@ -412,11 +498,127 @@ ledger.getRange("D1:D91").format.columnWidthPx = 100;
 ledger.getRange("E1:E91").format.columnWidthPx = 95;
 ledger.getRange("F1:F91").format.columnWidthPx = 115;
 ledger.getRange("G1:G91").format.columnWidthPx = 125;
+ledger.getRange("H1:H91").format.columnWidthPx = 115;
 ledger.getRange("A1:G1").format.rowHeightPx = 36;
+ledger.getRange("H1:H1").format.rowHeightPx = 36;
+
+// Workout reference cards by phase so the ledger links have a clear destination.
+dashboard.getRange("J5:L5").merge();
+dashboard.getRange("J5").values = [["Workout Reference"]];
+dashboard.getRange("J6:K6").merge();
+dashboard.getRange("J6").values = [["Phase 1"]];
+dashboard.getRange("L6").values = [["3 km daily. Weekly long walk: 5 km. 2 rounds."]];
+dashboard.getRange("J7:K7").merge();
+dashboard.getRange("J7").values = [["Phase 2"]];
+dashboard.getRange("L7").values = [["5 km daily. Weekly heavy walk: 10 km. 2 rounds."]];
+dashboard.getRange("J8:K8").merge();
+dashboard.getRange("J8").values = [["Phase 3"]];
+dashboard.getRange("L8").values = [["6 km daily with 5 kg pack. Weekly long walk: 12 km. 3 rounds."]];
+dashboard.getRange("J9:K9").merge();
+dashboard.getRange("J9").values = [["Phase 4"]];
+dashboard.getRange("L9").values = [["8 km daily. Weekly long walk: 15 km. Peak: 21 km on Day 90. 3 rounds."]];
+dashboard.getRange("J5:L9").format = {
+  borders: { preset: "all", style: "thin", color: "#CBD5E1" },
+  wrapText: true,
+  verticalAlignment: "middle",
+};
+dashboard.getRange("J5:L5").format = {
+  fill: "#0F172A",
+  font: { color: "#FFFFFF", bold: true },
+  horizontalAlignment: "center",
+};
+dashboard.getRange("J6:K9").format = {
+  fill: "#FEF3C7",
+  font: { color: "#854D0E", bold: true },
+};
+dashboard.getRange("L6:L9").format = {
+  fill: "#F8FAFC",
+  font: { color: "#334155" },
+  wrapText: true,
+};
+dashboard.getRange("J6:L9").format.rowHeightPx = 40;
+
+// Helper table for charts.
+dashboard.getRange("J12:L25").values = [
+  ["Week", "Planned Cumulative", "Actual Cumulative"],
+  ["Week 1", null, null],
+  ["Week 2", null, null],
+  ["Week 3", null, null],
+  ["Week 4", null, null],
+  ["Week 5", null, null],
+  ["Week 6", null, null],
+  ["Week 7", null, null],
+  ["Week 8", null, null],
+  ["Week 9", null, null],
+  ["Week 10", null, null],
+  ["Week 11", null, null],
+  ["Week 12", null, null],
+  ["Week 13", null, null],
+];
+for (let w = 1; w <= 13; w += 1) {
+  const row = 13 + w;
+  const endDay = Math.min(days, w * 7);
+  dashboard.getRange(`K${row}`).formulas = [[`=SUM('${ledgerName}'!$D$2:$D$${endDay + 1})`]];
+  dashboard.getRange(`L${row}`).formulas = [[`=SUM('${ledgerName}'!$E$2:$E$${endDay + 1})`]];
+}
+dashboard.getRange("J12:L25").format = {
+  borders: { preset: "all", style: "thin", color: "#CBD5E1" },
+};
+dashboard.getRange("J12:L12").format = {
+  fill: "#1D4ED8",
+  font: { bold: true, color: "#FFFFFF" },
+};
+dashboard.getRange("J13:J25").format = {
+  fill: "#EFF6FF",
+  font: { bold: true },
+};
+dashboard.getRange("K13:L25").format = {
+  fill: "#F8FAFC",
+};
+
+dashboard.charts.deleteAll();
+const progressChart = dashboard.charts.add("line", dashboard.getRange("J12:L25"));
+progressChart.title = "Weekly Cumulative Distance";
+progressChart.hasLegend = true;
+progressChart.setPosition("J27", "Q43");
+progressChart.xAxis = { axisType: "textAxis" };
+progressChart.yAxis = { numberFormatCode: "0" };
+
+dashboard.getRange("J60:K64").values = [
+  ["Status", "Count"],
+  ["SUCCESS", null],
+  ["PARTIAL SUCCESS", null],
+  ["FAILURE", null],
+  ["PENDING", null],
+];
+dashboard.getRange("K61").formulas = [[`=COUNTIF('${ledgerName}'!$G$2:$G$91,"SUCCESS")`]];
+dashboard.getRange("K62").formulas = [[`=COUNTIF('${ledgerName}'!$G$2:$G$91,"PARTIAL SUCCESS")`]];
+dashboard.getRange("K63").formulas = [[`=COUNTIF('${ledgerName}'!$G$2:$G$91,"FAILURE")`]];
+dashboard.getRange("K64").formulas = [[`=COUNTIF('${ledgerName}'!$G$2:$G$91,"PENDING")`]];
+dashboard.getRange("J60:K64").format = {
+  borders: { preset: "all", style: "thin", color: "#CBD5E1" },
+};
+dashboard.getRange("J60:K60").format = {
+  fill: "#1D4ED8",
+  font: { bold: true, color: "#FFFFFF" },
+};
+dashboard.getRange("J61:J64").format = {
+  fill: "#EFF6FF",
+  font: { bold: true },
+};
+dashboard.getRange("K61:K64").format = {
+  fill: "#F8FAFC",
+};
+const statusChart2 = dashboard.charts.add("doughnut", dashboard.getRange("J60:K64"));
+statusChart2.title = "Status Breakdown";
+statusChart2.hasLegend = true;
+statusChart2.setPosition("O44", "T58");
 
 await fs.mkdir(OUTPUT_DIR, { recursive: true });
 const xlsx = await SpreadsheetFile.exportXlsx(workbook);
-await xlsx.save(path.join(OUTPUT_DIR, "missionary_ready_90_day_tracker.xlsx"));
+const xlsxPath = path.join(OUTPUT_DIR, "missionary_ready_90_day_tracker.xlsx");
+await xlsx.save(xlsxPath);
+await injectWorkoutHyperlinks(xlsxPath);
 
 const dashboardPreview = await workbook.render({
   sheetName: dashboardName,
@@ -431,7 +633,7 @@ await fs.writeFile(
 
 const ledgerPreview = await workbook.render({
   sheetName: ledgerName,
-  range: "A1:G20",
+  range: "A1:H20",
   autoCrop: "all",
   scale: 1.1,
   format: "png",
