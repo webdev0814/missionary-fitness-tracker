@@ -538,8 +538,8 @@ dashboard.getRange("L6:L9").format = {
 };
 dashboard.getRange("J6:L9").format.rowHeightPx = 40;
 
-// Helper table for charts.
-dashboard.getRange("A41:C54").values = [
+// Keep chart source data off the dashboard so the sheet crops tightly.
+ledger.getRange("J1:L14").values = [
   ["Week", "Planned Cumulative", "Actual Cumulative"],
   ["Week 1", null, null],
   ["Week 2", null, null],
@@ -556,63 +556,63 @@ dashboard.getRange("A41:C54").values = [
   ["Week 13", null, null],
 ];
 for (let w = 1; w <= 13; w += 1) {
-  const row = 41 + w;
+  const row = 1 + w;
   const endDay = Math.min(days, w * 7);
-  dashboard.getRange(`B${row}`).formulas = [[`=SUM('${ledgerName}'!$D$2:$D$${endDay + 1})`]];
-  dashboard.getRange(`C${row}`).formulas = [[`=SUM('${ledgerName}'!$E$2:$E$${endDay + 1})`]];
+  ledger.getRange(`K${row}`).formulas = [[`=SUM('${ledgerName}'!$D$2:$D$${endDay + 1})`]];
+  ledger.getRange(`L${row}`).formulas = [[`=SUM('${ledgerName}'!$E$2:$E$${endDay + 1})`]];
 }
-dashboard.getRange("A41:C54").format = {
+ledger.getRange("J1:L14").format = {
   borders: { preset: "all", style: "thin", color: "#CBD5E1" },
 };
-dashboard.getRange("A41:C41").format = {
+ledger.getRange("J1:L1").format = {
   fill: "#1D4ED8",
   font: { bold: true, color: "#FFFFFF" },
 };
-dashboard.getRange("A42:A54").format = {
+ledger.getRange("J2:J14").format = {
   fill: "#EFF6FF",
   font: { bold: true },
 };
-dashboard.getRange("B42:C54").format = {
+ledger.getRange("K2:L14").format = {
   fill: "#F8FAFC",
 };
 
 dashboard.charts.deleteAll();
-const progressChart = dashboard.charts.add("line", dashboard.getRange("A41:C54"));
+const progressChart = dashboard.charts.add("line", ledger.getRange("J1:L14"));
 progressChart.title = "Weekly Cumulative Distance";
 progressChart.hasLegend = true;
-progressChart.setPosition("A25", "J39");
+progressChart.setPosition("A25", "I36");
 progressChart.xAxis = { axisType: "textAxis" };
 progressChart.yAxis = { numberFormatCode: "0" };
 
-dashboard.getRange("K41:L45").values = [
+ledger.getRange("N1:O5").values = [
   ["Status", "Count"],
   ["SUCCESS", null],
   ["PARTIAL SUCCESS", null],
   ["FAILURE", null],
   ["PENDING", null],
 ];
-dashboard.getRange("L42").formulas = [[`=COUNTIF('${ledgerName}'!$G$2:$G$91,"SUCCESS")`]];
-dashboard.getRange("L43").formulas = [[`=COUNTIF('${ledgerName}'!$G$2:$G$91,"PARTIAL SUCCESS")`]];
-dashboard.getRange("L44").formulas = [[`=COUNTIF('${ledgerName}'!$G$2:$G$91,"FAILURE")`]];
-dashboard.getRange("L45").formulas = [[`=COUNTIF('${ledgerName}'!$G$2:$G$91,"PENDING")`]];
-dashboard.getRange("K41:L45").format = {
+ledger.getRange("O2").formulas = [[`=COUNTIF('${ledgerName}'!$G$2:$G$91,"SUCCESS")`]];
+ledger.getRange("O3").formulas = [[`=COUNTIF('${ledgerName}'!$G$2:$G$91,"PARTIAL SUCCESS")`]];
+ledger.getRange("O4").formulas = [[`=COUNTIF('${ledgerName}'!$G$2:$G$91,"FAILURE")`]];
+ledger.getRange("O5").formulas = [[`=COUNTIF('${ledgerName}'!$G$2:$G$91,"PENDING")`]];
+ledger.getRange("N1:O5").format = {
   borders: { preset: "all", style: "thin", color: "#CBD5E1" },
 };
-dashboard.getRange("K41:L41").format = {
+ledger.getRange("N1:O1").format = {
   fill: "#1D4ED8",
   font: { bold: true, color: "#FFFFFF" },
 };
-dashboard.getRange("K42:K45").format = {
+ledger.getRange("N2:N5").format = {
   fill: "#EFF6FF",
   font: { bold: true },
 };
-dashboard.getRange("L42:L45").format = {
+ledger.getRange("O2:O5").format = {
   fill: "#F8FAFC",
 };
-const statusChart2 = dashboard.charts.add("doughnut", dashboard.getRange("K41:L45"));
+const statusChart2 = dashboard.charts.add("doughnut", ledger.getRange("N1:O5"));
 statusChart2.title = "Status Breakdown";
 statusChart2.hasLegend = true;
-statusChart2.setPosition("K25", "N39");
+statusChart2.setPosition("J25", "M36");
 
 await fs.mkdir(OUTPUT_DIR, { recursive: true });
 const xlsx = await SpreadsheetFile.exportXlsx(workbook);
