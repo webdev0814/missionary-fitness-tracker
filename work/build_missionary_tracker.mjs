@@ -580,7 +580,7 @@ dashboard.charts.deleteAll();
 const progressChart = dashboard.charts.add("line", ledger.getRange("J1:L14"));
 progressChart.title = "Weekly Cumulative Distance";
 progressChart.hasLegend = true;
-progressChart.setPosition("A25", "I36");
+progressChart.setPosition("C20", "J31");
 progressChart.xAxis = { axisType: "textAxis" };
 progressChart.yAxis = { numberFormatCode: "0" };
 
@@ -612,7 +612,7 @@ ledger.getRange("O2:O5").format = {
 const statusChart2 = dashboard.charts.add("doughnut", ledger.getRange("N1:O5"));
 statusChart2.title = "Status Breakdown";
 statusChart2.hasLegend = true;
-statusChart2.setPosition("J25", "M36");
+statusChart2.setPosition("K20", "M31");
 
 await fs.mkdir(OUTPUT_DIR, { recursive: true });
 const xlsx = await SpreadsheetFile.exportXlsx(workbook);
