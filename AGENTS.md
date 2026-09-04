@@ -1,10 +1,10 @@
 # Agent Briefing: missionary-fitness-tracker
 
 ## 1. Repository Overview & Purpose
-- **Repository Name**: `missionary-fitness-tracker`
+- **Repository**: `webdev0814/missionary-fitness-tracker`
 - **Visibility**: `Public`
 - **Default Branch**: `main`
-- **Last Updated / Pushed**: 2026-06-04
+- **Last Updated / Pushed**: 2026-09-04
 - **Description**: Missionary Ready 90-Day Fitness Tracker workbook and dashboard
 - **Context from README**: A production-ready 90-day Google Sheets tracker for a missionary fitness and wellness routine. What it includes: - A dashboard with daily mission guidance, progress tracking, and phase summaries - Two visual progress charts on the dashboard
 
@@ -14,7 +14,7 @@
 ## 2. Tech Stack & Architecture
 - **Primary Language / Ecosystem**: JavaScript
 - **Key Directories**: `outputs/`, `work/`
-- **Notable Top-Level Files**: `.gitignore`, `LICENSE`, `README.md`
+- **Notable Top-Level Files**: `.gitignore`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `LICENSE`, `README.md`
 
 ---
 
@@ -38,6 +38,9 @@
 
 ## 4. Recent Commit Activity (Where We Left Off)
 The most recent commits show the latest development trajectory:
+- `[25efd7c]` (2026-09-04) docs: add comprehensive agent briefing (AGENTS.md, GEMINI.md, CLAUDE.md)
+- `[b98f215]` (2026-09-04) docs: add comprehensive agent briefing (AGENTS.md, GEMINI.md, CLAUDE.md)
+- `[2193a8b]` (2026-09-04) docs: add comprehensive agent briefing (AGENTS.md, GEMINI.md, CLAUDE.md)
 - `[e59a1d8]` (2026-06-04) Point workout links to LDS site
 - `[f58d338]` (2026-06-04) Reposition charts into dashboard gap
 - `[1e10936]` (2026-06-04) Move chart helpers off dashboard
