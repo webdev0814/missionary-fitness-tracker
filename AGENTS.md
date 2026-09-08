@@ -38,6 +38,9 @@
 
 ## 4. Recent Commit Activity (Where We Left Off)
 The most recent commits show the latest development trajectory:
+- `[945bc79]` (2026-09-04) docs: add comprehensive agent briefing (AGENTS.md, GEMINI.md, CLAUDE.md)
+- `[583a723]` (2026-09-04) docs: add comprehensive agent briefing (AGENTS.md, GEMINI.md, CLAUDE.md)
+- `[3632946]` (2026-09-04) docs: add comprehensive agent briefing (AGENTS.md, GEMINI.md, CLAUDE.md)
 - `[25efd7c]` (2026-09-04) docs: add comprehensive agent briefing (AGENTS.md, GEMINI.md, CLAUDE.md)
 - `[b98f215]` (2026-09-04) docs: add comprehensive agent briefing (AGENTS.md, GEMINI.md, CLAUDE.md)
 - `[2193a8b]` (2026-09-04) docs: add comprehensive agent briefing (AGENTS.md, GEMINI.md, CLAUDE.md)
@@ -45,9 +48,6 @@ The most recent commits show the latest development trajectory:
 - `[f58d338]` (2026-06-04) Reposition charts into dashboard gap
 - `[1e10936]` (2026-06-04) Move chart helpers off dashboard
 - `[231c4b6]` (2026-06-04) Reduce dashboard whitespace
-- `[8b77ab2]` (2026-06-04) Tighten dashboard chart layout
-- `[ca8b59e]` (2026-06-04) Add dashboard charts and workout links
-- `[b836e01]` (2026-06-04) Add missionary fitness tracker workbook
 
 ---
 
